@@ -93,12 +93,14 @@
 import { PlusOutlined } from '@ant-design/icons-vue';
 import {db} from '../Firebase/config'
 import { doc, getDoc } from "firebase/firestore";
-import { defineComponent, reactive, ref,onMounted } from 'vue';
+import { defineComponent, reactive, ref,onMounted,watch,watchEffect } from 'vue';
 import Uploader from './Uploader.vue'
+import {useProductStore} from '../stores/prodcuts'
+import {  storeToRefs } from 'pinia';
 
 export default defineComponent({
 
-    props:['id'],
+    props:['id','show'],
 
   components: {
     PlusOutlined,
@@ -108,8 +110,11 @@ export default defineComponent({
 
 setup(props,context) {
 
-console.log(props.id,'propss');
-    
+const store = useProductStore()
+const{editProductDetailst} = storeToRefs(store)
+console.log(editProductDetailst,"edit details");
+
+console.log(props.id,props.show,'propppsss');
     
     const form = ref({
       name: props.id,
@@ -119,7 +124,6 @@ console.log(props.id,'propss');
       description: '',
     });
    
-     
     const rules = {
       name: [{ required: true, message: 'Please enter user name' }],
       price: [{ required: true, message: 'Please select an price' }],
@@ -128,9 +132,7 @@ console.log(props.id,'propss');
       description: [{ required: true, message: 'Please enter url description' }],
     };
 
-   
     const visible = ref(false);
-
     const showDrawer = () => {
       visible.value = true;
     };
@@ -138,6 +140,20 @@ console.log(props.id,'propss');
     const onClose = () => {
       visible.value = false;
     };
+
+  watch(props.show,()=>{
+      console.log('watch called');
+        showDrawer()
+    })
+
+    watchEffect(()=>{
+
+    const editProduct=editProductDetailst
+    console.log('watch called');
+        showDrawer()
+
+
+    })
 
 
     const upload=()=>{
@@ -163,14 +179,14 @@ console.log(props.id,'propss');
 
     // })
 
-
     return {
       form,
       rules,
       visible,
       showDrawer,
       onClose,
-      upload
+      upload,
+      editProductDetailst
       
     };
   },

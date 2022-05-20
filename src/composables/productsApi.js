@@ -1,7 +1,8 @@
-import { addDoc, collection, getDoc, getDocs } from "@firebase/firestore";
+import { addDoc, collection, getDoc, getDocs,doc,deleteDoc } from "@firebase/firestore";
 import { useProductStore } from "../stores/prodcuts";
 import { db } from "../Firebase/config";
 import {ref} from 'vue'
+import updateStore from './updateStore'
 
 const store = useProductStore();
 
@@ -24,25 +25,26 @@ const getProductsApi = () => {
           store.setProducts(docs);
           products.value=store.getProducts;
           console.log(docs,'docs');
+          updateStore()
         });
         
-      } catch (error) {
-        
+      } catch (error) { 
         console.log(error);
       }
      
     }
   }
 
-
-  const  deleteProduct=(id)=> {
+  const  deleteProduct= async (id)=> {
 
     const docRef = doc(db, "products", id);
-    deleteDoc(docRef);
+    await deleteDoc(docRef);
+    updateStore()
+
 
   }
 
-  return { getProducts,products };
+  return { getProducts, products, deleteProduct };
 };
 
 export default getProductsApi

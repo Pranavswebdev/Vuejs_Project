@@ -1,15 +1,12 @@
 <template>
-  <Drawer @add="uploadData" />
+  <Drawer :id="editId" :show="toggle" @add="uploadData" />
   <a-table :columns="columns" :data-source="products">
     <template #name="{ text }">
       <a>{{ text }}</a>
     </template>
 
     <template #action="{ record }">
-      <a-button
-        style="margin-right: 10px"
-        @click="delProduct(record.id)"
-        danger 
+      <a-button style="margin-right: 10px" @click="delProduct(record.id)" danger
         >Delete</a-button
       >
       <a-button @click="editProduct(record.id)" type="primary">Edit</a-button>
@@ -22,10 +19,11 @@
 import { SmileOutlined, DownOutlined } from "@ant-design/icons-vue";
 import { db } from "../Firebase/config";
 import { addDoc, collection, getDoc, getDocs } from "@firebase/firestore";
-import { defineComponent, onMounted, ref,onBeforeMount,onUpdated } from "vue";
+import { defineComponent, onMounted, ref, onBeforeMount, onUpdated } from "vue";
 import Drawer from "../components/Drawer.vue";
 import { useProductStore } from "../stores/prodcuts";
-import getProductsApi from '../composables/productsApi'
+import getProductsApi from "../composables/productsApi";
+import updateStore from '../composables/updateStore'
 import { storeToRefs, mapActions } from "pinia";
 
 
@@ -40,8 +38,6 @@ const uploadData = async (data) => {
     desc: data.description,
   });
 };
-
-
 
 const columns = [
   {
@@ -70,38 +66,40 @@ const columns = [
     slots: { customRender: "action" },
   },
 ];
- 
-export default defineComponent({ 
 
+export default defineComponent({
   setup() {
-  
-  const store = useProductStore()
-  const {delet} = store
-  const {products}=storeToRefs(store)
-  const data = ref([]);
-  const {getProducts}=getProductsApi()
-  getProducts()
-  console.log(products,'products inside admin');
- 
- const delProduct = (id) => {
- 
+    const store = useProductStore();
+    const { delet } = store;
+    const { products } = storeToRefs(store);
+    const data = ref([]);
+    const { getProducts,deleteProduct } = getProductsApi()
+    var editId = ref('')
+    var toggle=ref(false)
+    getProducts();
+    console.log(products, "products inside admin");
 
-};
+    const delProduct = (id) => {
+      deleteProduct(id)
+      
+    };
 
+    const editProduct = (id) => {
+      editId.value=id
+      toggle.value=!toggle.value
+      console.log(editId.value);
+      store.editProduct(id)
+    };
 
-
-const editProduct = (id) => {
-  return id;
-};
-  
-   return {
+    return {
       data,
       columns,
       uploadData,
       delProduct,
       editProduct,
-      products
- 
+      editId,
+      products,
+      toggle
     };
   },
 
