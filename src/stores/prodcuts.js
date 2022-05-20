@@ -17,26 +17,12 @@ export const useProductStore = defineStore("store", {
     getProducts: (state) => state.products,
   },
   actions: {
-     
-    getProductsApi() {
-      if (this.products.length) {
-        return this.products;
-      } else {
-        const colref = collection(db, "products");
-        getDocs(colref).then((snapshot) => {
-          let docs = [];
-          snapshot.docs.forEach((doc) => {
-            docs.push({ ...doc.data(), id: doc.id });
-          });
-          console.log(snapshot);
-         return this.products = docs; 
-        });
-      }
-    },
+    setProducts(apiProducts) {
+      console.log(apiProducts, "products inside store");
 
-    deleteProduct(id) {
-      const docRef = doc(db, "products", id);
-      deleteDoc(docRef);
+      this.products = [...apiProducts];
     },
+ 
+ 
   },
 });

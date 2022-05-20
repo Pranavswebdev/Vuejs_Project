@@ -1,6 +1,6 @@
 <template>
   <Drawer @add="uploadData" />
-  <a-table :columns="columns" :data-source="data">
+  <a-table :columns="columns" :data-source="products">
     <template #name="{ text }">
       <a>{{ text }}</a>
     </template>
@@ -23,16 +23,11 @@ import { SmileOutlined, DownOutlined } from "@ant-design/icons-vue";
 import { db } from "../Firebase/config";
 import { addDoc, collection, getDoc, getDocs } from "@firebase/firestore";
 import { defineComponent, onMounted, ref,onBeforeMount,onUpdated } from "vue";
-
 import Drawer from "../components/Drawer.vue";
 import { useProductStore } from "../stores/prodcuts";
+import getProductsApi from '../composables/productsApi'
 import { storeToRefs, mapActions } from "pinia";
 
-const store = useProductStore();
-
-const { getProductsApi,deleteProduct,products,getProducts} = store;
-
-const data = ref([]);
 
 const uploadData = async (data) => {
   const colref = collection(db, "products");
@@ -46,15 +41,7 @@ const uploadData = async (data) => {
   });
 };
 
-const delProduct = (id) => {
 
-  deleteProduct(id) 
-
-};
-
-const editProduct = (id) => {
-  return id;
-};
 
 const columns = [
   {
@@ -87,20 +74,33 @@ const columns = [
 export default defineComponent({ 
 
   setup() {
+  
+  const store = useProductStore()
+  const {delet} = store
+  const {products}=storeToRefs(store)
+  const data = ref([]);
+  const {getProducts}=getProductsApi()
+  getProducts()
+  console.log(products,'products inside admin');
+ 
+ const delProduct = (id) => {
+ 
 
-    getProductsApi()
-    data.value =  store.getProducts
-    console.log(getProducts,'getProducts'); 
-    
+};
 
 
 
-    return {
+const editProduct = (id) => {
+  return id;
+};
+  
+   return {
       data,
       columns,
       uploadData,
       delProduct,
       editProduct,
+      products
  
     };
   },
