@@ -24,7 +24,6 @@
 
 <script >
 import {ShoppingCartOutlined,HeartOutlined } from '@ant-design/icons-vue';
-
 import {defineProps,computed} from 'vue'
 import { object, string } from 'vue-types';
 

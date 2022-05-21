@@ -30,5 +30,17 @@ export const useProductStore = defineStore("store", {
       this.editProductDetails = product;
       console.log(this.editProductDetails, "prod details state");
     },
+
+    deleteFromStore(id) {
+      const Updatedproducts = this.products.filter((product) => product.id !== id);
+      this.products = Updatedproducts
+      console.log('Deleted in Store');
+    },
+
+    addToStore(newProduct) {  
+      this.products.push(newProduct)
+      console.log('Added in Store');
+    },
+
   },
 });

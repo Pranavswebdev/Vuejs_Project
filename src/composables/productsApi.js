@@ -1,18 +1,24 @@
-import { addDoc, collection, getDoc, getDocs,doc,deleteDoc } from "@firebase/firestore";
+import {
+  addDoc,
+  collection,
+  getDoc,
+  getDocs,
+  doc,
+  deleteDoc,
+} from "@firebase/firestore";
 import { useProductStore } from "../stores/prodcuts";
 import { db } from "../Firebase/config";
-import {ref} from 'vue'
-import updateStore from './updateStore'
+import { ref } from "vue";
+import updateStore from "./updateStore";
 
 const store = useProductStore();
 
 const getProductsApi = () => {
+  const products = ref([]);
 
-  const products=ref([])
-  
   const getProducts = () => {
     if (store.getProducts.length) {
-      console.log(products.value,'if length>0');
+      console.log(products.value, "if length>0");
       products.value = store.getProducts;
     } else {
       try {
@@ -23,28 +29,35 @@ const getProductsApi = () => {
             docs.push({ ...doc.data(), id: doc.id });
           });
           store.setProducts(docs);
-          products.value=store.getProducts;
-          console.log(docs,'docs');
-          updateStore()
+          products.value = store.getProducts;
+          console.log(docs, "docs");
+          // updateStore();
         });
-        
-      } catch (error) { 
+      } catch (error) {
         console.log(error);
       }
-     
     }
-  }
+  };
 
-  const  deleteProduct= async (id)=> {
-
+  const deleteProduct = async (id) => {
     const docRef = doc(db, "products", id);
-    await deleteDoc(docRef);
-    updateStore()
+    deleteDoc(docRef).then((res) => {
+      store.deleteFromStore(id)
+    });
+  };
 
+  const addProduct = async (data) => {
+    const colref = collection(db, "products");
+    await addDoc(colref, data).then((res)=>{
 
-  }
+      store.addToStore(data)
+      console.log('product added',res.id);
 
-  return { getProducts, products, deleteProduct };
+    })
+
+  };
+
+  return { getProducts, products, deleteProduct,addProduct };
 };
 
-export default getProductsApi
+export default getProductsApi;

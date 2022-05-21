@@ -10,13 +10,9 @@ import {useProductStore} from '../stores/prodcuts'
 const main =useProductStore();
 const {products} = storeToRefs(main)
 
-
-
 </script>
-
 <template >
 <div class="cards" v-for="product in products" >
-
  <Card :product="product" />
 </div>
 
