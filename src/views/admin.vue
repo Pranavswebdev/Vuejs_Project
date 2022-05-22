@@ -1,7 +1,8 @@
 <template>
+<notifications position="top right" classes="my-custom-class" />
   <!-- <Drawer :id="editId" :show="toggle" @add="uploadData" /> -->
 
-  <a-button class="addbtn" type="primary" @click="showDrawer">
+  <a-button class="addbtn" type="primary" @click="addProductBtn">
     <PlusOutlined />
     Add New Product
   </a-button>
@@ -15,7 +16,6 @@
         >Delete</a-button
       >
       <a-button @click="editProduct(record.id)" type="primary">Edit</a-button>
-      <!-- <Drawer :id="record.id" @add="uploadData" /> -->
     </template>
   </a-table>
 
@@ -26,63 +26,13 @@
     :body-style="{ paddingBottom: '80px' }"
     @close="onClose"
   >
-    <a-form :model="form" :rules="rules" layout="vertical">
-      <a-row :gutter="16">
-        <a-col :span="12">
-          <a-form-item label="Product Name" name="name">
-            <a-input
-              v-model:value="form.name"
-              placeholder="Please enter product name"
-            />
-          </a-form-item>
-        </a-col>
-      </a-row>
-      <a-row :gutter="16">
-        <a-col :span="12">
-          <a-form-item label="Price" name="price">
-            <a-input
-              type="number"
-              v-model:value="form.price"
-              placeholder="Please enter product price"
-            />
-          </a-form-item>
-        </a-col>
-      </a-row>
-      <a-row :gutter="16">
-        <a-col :span="12">
-          <a-form-item label="Category" name="category">
-            <a-input
-              type="text"
-              v-model:value="form.category"
-              placeholder="Please enter productcategory"
-            />
-          </a-form-item>
-        </a-col>
-      </a-row>
-      <a-row :gutter="16">
-        <a-col :span="12">
-          <a-form-item label="Stock" name="stock">
-            <a-input
-              type="number"
-              v-model:value="form.stock"
-              placeholder="Please enter product Stock"
-            />
-          </a-form-item>
-        </a-col>
-      </a-row>
-      <a-row :gutter="12">
-        <a-col :span="24">
-          <a-form-item label="Description" name="description">
-            <a-textarea
-              v-model:value="form.description"
-              :rows="4"
-              placeholder="please enter url description"
-            />
-          </a-form-item>
-        </a-col>
-      </a-row>
-    </a-form>
-
+    <FormVue
+      :editId="editId"
+      :edit="edit"
+      @close="onClose"
+      @addProduct="uploadData"
+      @update="update"
+    />
     <div
       :style="{
         position: 'absolute',
@@ -95,24 +45,11 @@
         textAlign: 'right',
         zIndex: 1,
       }"
-    >
-      <a-button style="margin-right: 8px" @click="onClose">Cancel</a-button>
-      <a-button type="primary" @click="uploadData">Submit</a-button>
-    </div>
+    ></div>
   </a-drawer>
 </template>
 
 <script>
-import { SmileOutlined, DownOutlined } from "@ant-design/icons-vue";
-import { db } from "../Firebase/config";
-import { addDoc, collection, getDoc, getDocs } from "@firebase/firestore";
-import { defineComponent, onMounted, ref, onBeforeMount, onUpdated } from "vue";
-import Drawer from "../components/Drawer.vue";
-import getProductsApi from "../composables/productsApi";
-import updateStore from "../composables/updateStore";
-import { storeToRefs, mapActions } from "pinia";
-import { PlusOutlined } from "@ant-design/icons-vue";
-import { useProductStore } from "../stores/prodcuts";
 
 const columns = [
   {
@@ -142,68 +79,85 @@ const columns = [
   },
 ];
 
+
+import { SmileOutlined, DownOutlined } from "@ant-design/icons-vue";
+import { db } from "../Firebase/config";
+import { addDoc, collection, getDoc, getDocs } from "@firebase/firestore";
+import { defineComponent, onMounted, ref, onBeforeMount, onUpdated } from "vue";
+import Drawer from "../components/Drawer.vue";
+import getProductsApi from "../composables/productsApi";
+import { storeToRefs, mapActions } from "pinia";
+import { PlusOutlined } from "@ant-design/icons-vue";
+import { useProductStore } from "../stores/prodcuts";
+import FormVue from "../components/Form.vue";
+import { notify } from "@kyvg/vue3-notification";
+import Notifications from '@kyvg/vue3-notification'
 export default defineComponent({
   setup() {
     const store = useProductStore();
-    const { delet } = store;
     const { products } = storeToRefs(store);
     const data = ref([]);
-    const { getProducts, deleteProduct, addProduct } = getProductsApi();
+    const { getProducts, deleteProduct, addProduct, updateProduct } =
+      getProductsApi();
     var editId = ref("");
-    var toggle = ref(false);
+    let edit = ref(true);
     getProducts();
     console.log(products, "products inside admin");
-
     const delProduct = (id) => {
       deleteProduct(id);
     };
-
     const editProduct = (id) => {
       editId.value = id;
-      toggle.value = !toggle.value;
-      console.log(editId.value);
-      store.editProduct(id);
+      edit.value = true;
+      showDrawer();
     };
-    const form = ref({
-      name: "",
-      price: "",
-      category: "",
-      stock: "",
-      description: "",
-    });
+    onUpdated(() => console.log(edit.value));
 
     const rules = {
       name: [{ required: true, message: "Please enter user name" }],
       price: [{ required: true, message: "Please select an price" }],
-      category: [{ required: true, message: "Please choose the " }],
+      category: [{ required: true, message: "Please choose the category" }],
       stock: [{ required: true, message: "Please choose the stock" }],
       description: [
-        { required: true, message: "Please enter url description" },
+        { required: true, message: "Please enter description" },
       ],
     };
-    const productData=ref({})
-    const uploadData = async () => {
-        productData.value = {
-        name:form.value.name,
-        price:form.value.price,
-        category:form.value.category,
-        stock:form.value.stock,
-        desc:form.value.description,
+
+    const uploadData = (productData) => {
       
-      };
-      addProduct(productData.value)
-      console.log(productData.value);
 
-    //  form.value.category = "";
-    //   form.value.description = "";
-    //   form.value.name = "";
-    //   form.value.price = "";
-    //   form.value.stock = "";
+      if (
+        productData.name &&
+        productData.price &&
+        productData.stock &&
+        productData.desc &&
+        productData.category !== ""
+      ) {
 
-      onClose();
+        addProduct(productData);
+        console.log(productData, "product data in admin");
+        onClose();
+      } else {
+        console.log(
+          productData.name,
+          productData.stock,
+          "product data in admin"
+        );
+        alert("Please fill the form");
+        return;
+      }
+    };
+
+    const update = (updateData) => {
+      updateProduct(updateData);
     };
 
     const visible = ref(false);
+    const addProductBtn = () => {
+      edit.value = false;
+      showDrawer();
+    };
+
     const showDrawer = () => {
       visible.value = true;
     };
@@ -212,15 +166,8 @@ export default defineComponent({
       visible.value = false;
     };
 
-    const upload = () => {
-      context.emit("add", form.value);
-      console.log(form.value);
-      form.value.category = "";
-      form.value.description = "";
-      form.value.name = "";
-      form.value.price = "";
-      form.value.stock = "";
-    };
+
+
     return {
       data,
       columns,
@@ -229,13 +176,14 @@ export default defineComponent({
       editProduct,
       editId,
       products,
-      toggle,
-      form,
+      edit,
       rules,
       visible,
       showDrawer,
       onClose,
-      upload,
+      addProductBtn,
+      updateProduct,
+      update,
     };
   },
 
@@ -244,6 +192,8 @@ export default defineComponent({
     DownOutlined,
     PlusOutlined,
     Drawer,
+    FormVue,
+     Notifications
   },
 });
 </script>

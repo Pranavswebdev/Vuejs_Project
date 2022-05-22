@@ -1,13 +1,5 @@
 import { defineStore } from "pinia";
-import { db } from "../Firebase/config";
-import {
-  addDoc,
-  collection,
-  getDoc,
-  getDocs,
-  deleteDoc,
-  doc,
-} from "@firebase/firestore";
+
 export const useProductStore = defineStore("store", {
   id: "products",
   state: () => ({
@@ -41,6 +33,13 @@ export const useProductStore = defineStore("store", {
       this.products.push(newProduct)
       console.log('Added in Store');
     },
+
+    updateInStore(updateData){
+      console.log('update calledin store');
+    const index = this.products.findIndex(product => product.id === updateData.id);
+    this.products[index]=updateData
+    console.log({index});
+    }
 
   },
 });

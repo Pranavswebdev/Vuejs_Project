@@ -5,11 +5,13 @@ import {
   getDocs,
   doc,
   deleteDoc,
+  updateDoc,
 } from "@firebase/firestore";
 import { useProductStore } from "../stores/prodcuts";
 import { db } from "../Firebase/config";
 import { ref } from "vue";
 import updateStore from "./updateStore";
+import async from "hbs/lib/async";
 
 const store = useProductStore();
 
@@ -40,24 +42,44 @@ const getProductsApi = () => {
   };
 
   const deleteProduct = async (id) => {
-    const docRef = doc(db, "products", id);
-    deleteDoc(docRef).then((res) => {
-      store.deleteFromStore(id)
-    });
+    try {
+      const docRef = doc(db, "products", id);
+      deleteDoc(docRef).then((res) => {
+        store.deleteFromStore(id);
+        alert("Product Deleted");
+      });
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   const addProduct = async (data) => {
-    const colref = collection(db, "products");
-    await addDoc(colref, data).then((res)=>{
-
-      store.addToStore(data)
-      console.log('product added',res.id);
-
-    })
-
+    try {
+      const colref = collection(db, "products");
+      await addDoc(colref, data).then((res) => {
+        data.id = res.id;
+        store.addToStore(data);
+        console.log("product added", res.id);
+        alert("Product Added");
+      });
+    } catch (error) {
+      console.log(error);
+    }
   };
 
-  return { getProducts, products, deleteProduct,addProduct };
+  const updateProduct = async (updateData) => {
+    try {
+      const docRef = doc(db, "products", updateData.id);
+      updateDoc(docRef, updateData).then((res) => {
+        store.updateInStore(updateData);
+        alert("Product Updated");
+        console.log(updateData);
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  return { getProducts, products, deleteProduct, addProduct, updateProduct };
 };
 
 export default getProductsApi;

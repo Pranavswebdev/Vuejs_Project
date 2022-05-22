@@ -4,10 +4,12 @@
     <router-link to="/cart">Cart</router-link>
     <router-link  v-if="!isLoggedIn" to="/login">Login</router-link>
     <router-link  v-if="!isLoggedIn" to="/register">Register</router-link>
+     <router-link  to="/admin">Admin</router-link>
     <Button id="signout" @click="handleSignout" v-if="isLoggedIn" danger
       >Sign out</Button
     >
   </nav>
+  <notifications position="bottom right" classes="my-custom-class" />
 
   <RouterView />
 </template>
@@ -19,6 +21,7 @@ import { onMounted, ref } from "vue";
 import { db } from "./Firebase/config";
 import { getAuth, onAuthStateChanged, signOut } from "@firebase/auth";
 import router from "./router";
+import Notifications from '@kyvg/vue3-notification'
 
 const isLoggedIn = ref(false);
 

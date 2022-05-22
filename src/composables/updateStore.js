@@ -4,17 +4,15 @@ import { collection, onSnapshot } from "firebase/firestore";
 import { useProductStore } from "../stores/prodcuts";
 
 const updateStore = () => {
-  const documents = ref(null);
+
   const store = useProductStore();
 
   let colRef = collection(db, "products");
   onSnapshot(colRef, (snapshot) => {
     let docs = [];
     snapshot.docs.forEach((doc) => {
-      docs.push({ ...doc.data(), id: doc.id });
-    });
+      docs.push({ ...doc.data(), id: doc.id });});
     store.setProducts(docs);
-
 
   });
 };
